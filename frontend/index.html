@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>AgroAPI - Gestión Agrícola</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    body {
+      background-image: url('img/fondo.jpg');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      min-height: 100vh;
+      padding-bottom: 3rem;
+    }
+
+    section {
+      background-color: rgba(255, 255, 255, 0.9);
+      border-radius: 15px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      padding: 1rem;
+    }
+
+    h1 {
+      font-weight: bold;
+      color: #2e7d32;
+    }
+  </style>
+</head>
+<body>
+  <div class="container py-4">
+    <h1 class="text-center mb-4">🌿 AgroAPI - Gestión Agrícola</h1>
+
+    <!-- 🌱 Cultivos -->
+    <section class="mb-5">
+      <h2 class="h5">🌱 Cultivos</h2>
+      <ul id="cultivo-list" class="list-group mb-3"></ul>
+      <form id="cultivo-form" class="row g-2 align-items-end">
+        <div class="col-md-4">
+          <label for="nombre" class="form-label">Nombre del cultivo</label>
+          <input type="text" id="nombre" class="form-control" required />
+        </div>
+        <div class="col-md-4">
+          <label for="tipo" class="form-label">Tipo</label>
+          <input type="text" id="tipo" class="form-control" required />
+        </div>
+        <div class="col-md-3">
+          <label for="fechaSiembra" class="form-label">Fecha de siembra</label>
+          <input type="date" id="fechaSiembra" class="form-control" required />
+        </div>
+        <div class="col-md-1">
+          <button type="submit" class="btn btn-primary w-100">Registrar</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- 🌾 Parcelas -->
+    <section class="mb-5">
+      <h2 class="h5">🌾 Parcelas</h2>
+      <ul id="parcela-list" class="list-group mb-3"></ul>
+      <form id="parcela-form" class="row g-2 align-items-end">
+        <div class="col-md-3">
+          <label for="nombreParcela" class="form-label">Nombre parcela</label>
+          <input type="text" id="nombreParcela" class="form-control" required />
+        </div>
+        <div class="col-md-3">
+          <label for="ubicacion" class="form-label">Ubicación</label>
+          <input type="text" id="ubicacion" class="form-control" required />
+        </div>
+        <div class="col-md-2">
+          <label for="area" class="form-label">Área (ha)</label>
+          <input type="number" step="0.01" id="area" class="form-control" required />
+        </div>
+        <div class="col-md-3">
+          <label for="cultivoSelect" class="form-label">Cultivo asociado</label>
+          <select id="cultivoSelect" class="form-select" required>
+            <option value="">-- Selecciona un cultivo --</option>
+          </select>
+        </div>
+        <div class="col-md-1">
+          <button type="submit" class="btn btn-success w-100">Registrar</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- 🌧️ Riegos -->
+    <section class="mb-5">
+      <h2 class="h5">🌧️ Riegos</h2>
+      <ul id="riego-list" class="list-group mb-3"></ul>
+      <form id="riego-form" class="row g-2 align-items-end">
+        <div class="col-md-3">
+          <label for="fechaRiego" class="form-label">Fecha</label>
+          <input type="date" id="fechaRiego" class="form-control" required />
+        </div>
+        <div class="col-md-3">
+          <label for="cantidadAgua" class="form-label">Cantidad de agua (L)</label>
+          <input type="number" step="0.01" id="cantidadAgua" class="form-control" required />
+        </div>
+        <div class="col-md-4">
+          <label for="parcelaSelectRiego" class="form-label">Parcela</label>
+          <select id="parcelaSelectRiego" class="form-select" required>
+            <option value="">-- Selecciona una parcela --</option>
+          </select>
+        </div>
+        <div class="col-md-2">
+          <button type="submit" class="btn btn-primary w-100">Registrar</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- 🧪 Fertilizaciones -->
+    <section class="mb-5">
+      <h2 class="h5">🧪 Fertilizaciones</h2>
+      <ul id="fertilizacion-list" class="list-group mb-3"></ul>
+      <form id="fertilizacion-form" class="row g-2 align-items-end">
+        <div class="col-md-3">
+          <label for="fechaFertilizacion" class="form-label">Fecha</label>
+          <input type="date" id="fechaFertilizacion" class="form-control" required />
+        </div>
+        <div class="col-md-3">
+          <label for="tipoFertilizante" class="form-label">Tipo de fertilizante</label>
+          <input type="text" id="tipoFertilizante" class="form-control" required />
+        </div>
+        <div class="col-md-2">
+          <label for="dosis" class="form-label">Dosis (kg)</label>
+          <input type="number" step="0.01" id="dosis" class="form-control" required />
+        </div>
+        <div class="col-md-3">
+          <label for="parcelaSelectFertilizacion" class="form-label">Parcela</label>
+          <select id="parcelaSelectFertilizacion" class="form-select" required>
+            <option value="">-- Selecciona una parcela --</option>
+          </select>
+        </div>
+        <div class="col-md-1">
+          <button type="submit" class="btn btn-success w-100">Registrar</button>
+        </div>
+      </form>
+    </section>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
