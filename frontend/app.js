@@ -5,16 +5,27 @@ let parcelaEnEdicion = null;
 let riegoEnEdicion = null;
 let fertilizacionEnEdicion = null;
 
-// ----------------- CULTIVOS ------------------
+function getAuthHeaders() {
+  const token = localStorage.getItem("token");
+  return {
+    "Content-Type": "application/json",
+    "Authorization": `Bearer ${token}`
+  };
+}
+
+if (!localStorage.getItem("token")) {
+  window.location.href = "login.html";
+}
+
+// ------------------ CULTIVOS ------------------
 function mostrarCultivos() {
-  fetch(`${API}/cultivos`)
+  fetch(`${API}/cultivos`, { headers: getAuthHeaders() })
     .then(res => res.json())
     .then(data => {
       const lista = document.getElementById("cultivo-list");
       const select = document.getElementById("cultivoSelect");
       lista.innerHTML = "";
       select.innerHTML = '<option value="">-- Selecciona un cultivo --</option>';
-
       data.forEach(c => {
         const li = document.createElement("li");
         li.className = "list-group-item d-flex justify-content-between align-items-center";
@@ -23,8 +34,7 @@ function mostrarCultivos() {
           <div>
             <button class="btn btn-sm btn-warning me-1" onclick="editarCultivo(${c.id})">✏️</button>
             <button class="btn btn-sm btn-danger" onclick="eliminarCultivo(${c.id})">🗑️</button>
-          </div>
-        `;
+          </div>`;
         lista.appendChild(li);
 
         const option = document.createElement("option");
@@ -36,7 +46,7 @@ function mostrarCultivos() {
 }
 
 function editarCultivo(id) {
-  fetch(`${API}/cultivos/${id}`)
+  fetch(`${API}/cultivos/${id}`, { headers: getAuthHeaders() })
     .then(res => res.json())
     .then(c => {
       cultivoEnEdicion = id;
@@ -57,7 +67,7 @@ document.getElementById("cultivo-form").addEventListener("submit", e => {
   const url = cultivoEnEdicion ? `${API}/cultivos/${cultivoEnEdicion}` : `${API}/cultivos`;
   fetch(url, {
     method: metodo,
-    headers: { "Content-Type": "application/json" },
+    headers: getAuthHeaders(),
     body: JSON.stringify(cultivo)
   }).then(() => {
     mostrarCultivos();
@@ -68,13 +78,16 @@ document.getElementById("cultivo-form").addEventListener("submit", e => {
 
 function eliminarCultivo(id) {
   if (confirm("¿Eliminar este cultivo?")) {
-    fetch(`${API}/cultivos/${id}`, { method: "DELETE" }).then(mostrarCultivos);
+    fetch(`${API}/cultivos/${id}`, {
+      method: "DELETE",
+      headers: getAuthHeaders()
+    }).then(mostrarCultivos);
   }
 }
 
-// ----------------- PARCELAS ------------------
+// ------------------ PARCELAS ------------------
 function mostrarParcelas() {
-  fetch(`${API}/parcelas`)
+  fetch(`${API}/parcelas`, { headers: getAuthHeaders() })
     .then(res => res.json())
     .then(data => {
       const lista = document.getElementById("parcela-list");
@@ -88,15 +101,14 @@ function mostrarParcelas() {
           <div>
             <button class="btn btn-sm btn-warning me-1" onclick="editarParcela(${p.id})">✏️</button>
             <button class="btn btn-sm btn-danger" onclick="eliminarParcela(${p.id})">🗑️</button>
-          </div>
-        `;
+          </div>`;
         lista.appendChild(li);
       });
     });
 }
 
 function editarParcela(id) {
-  fetch(`${API}/parcelas/${id}`)
+  fetch(`${API}/parcelas/${id}`, { headers: getAuthHeaders() })
     .then(res => res.json())
     .then(p => {
       parcelaEnEdicion = id;
@@ -120,7 +132,7 @@ document.getElementById("parcela-form").addEventListener("submit", e => {
   const url = parcelaEnEdicion ? `${API}/parcelas/${parcelaEnEdicion}` : `${API}/parcelas`;
   fetch(url, {
     method: metodo,
-    headers: { "Content-Type": "application/json" },
+    headers: getAuthHeaders(),
     body: JSON.stringify(parcela)
   }).then(() => {
     mostrarParcelas();
@@ -131,72 +143,16 @@ document.getElementById("parcela-form").addEventListener("submit", e => {
 
 function eliminarParcela(id) {
   if (confirm("¿Eliminar esta parcela?")) {
-    fetch(`${API}/parcelas/${id}`, { method: "DELETE" }).then(mostrarParcelas);
+    fetch(`${API}/parcelas/${id}`, {
+      method: "DELETE",
+      headers: getAuthHeaders()
+    }).then(mostrarParcelas);
   }
 }
 
-// ----------------- RIEGOS ------------------
-function mostrarRiegos() {
-  fetch(`${API}/riegos`)
-    .then(res => res.json())
-    .then(data => {
-      const lista = document.getElementById("riego-list");
-      lista.innerHTML = "";
-      data.forEach(r => {
-        const li = document.createElement("li");
-        li.className = "list-group-item d-flex justify-content-between align-items-center";
-        li.innerHTML = `
-          <span>🌧️ ${r.fecha} - ${r.cantidadAgua} L (${r.parcela?.nombre})</span>
-          <div>
-            <button class="btn btn-sm btn-warning me-1" onclick="editarRiego(${r.id})">✏️</button>
-            <button class="btn btn-sm btn-danger" onclick="eliminarRiego(${r.id})">🗑️</button>
-          </div>
-        `;
-        lista.appendChild(li);
-      });
-    });
-}
-
-function editarRiego(id) {
-  fetch(`${API}/riegos/${id}`)
-    .then(res => res.json())
-    .then(r => {
-      riegoEnEdicion = id;
-      document.getElementById("fechaRiego").value = r.fecha;
-      document.getElementById("cantidadAgua").value = r.cantidadAgua;
-      document.getElementById("parcelaSelectRiego").value = r.parcela?.id || "";
-    });
-}
-
-document.getElementById("riego-form").addEventListener("submit", e => {
-  e.preventDefault();
-  const riego = {
-    fecha: document.getElementById("fechaRiego").value,
-    cantidadAgua: parseFloat(document.getElementById("cantidadAgua").value),
-    parcela: { id: parseInt(document.getElementById("parcelaSelectRiego").value) }
-  };
-  const metodo = riegoEnEdicion ? "PUT" : "POST";
-  const url = riegoEnEdicion ? `${API}/riegos/${riegoEnEdicion}` : `${API}/riegos`;
-  fetch(url, {
-    method: metodo,
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(riego)
-  }).then(() => {
-    mostrarRiegos();
-    document.getElementById("riego-form").reset();
-    riegoEnEdicion = null;
-  });
-});
-
-function eliminarRiego(id) {
-  if (confirm("¿Eliminar este riego?")) {
-    fetch(`${API}/riegos/${id}`, { method: "DELETE" }).then(mostrarRiegos);
-  }
-}
-
-// ----------------- FERTILIZACIONES ------------------
+// ------------------ FERTILIZACIONES ------------------
 function mostrarFertilizaciones() {
-  fetch(`${API}/fertilizaciones`)
+  fetch(`${API}/fertilizaciones`, { headers: getAuthHeaders() })
     .then(res => res.json())
     .then(data => {
       const lista = document.getElementById("fertilizacion-list");
@@ -209,15 +165,14 @@ function mostrarFertilizaciones() {
           <div>
             <button class="btn btn-sm btn-warning me-1" onclick="editarFertilizacion(${f.id})">✏️</button>
             <button class="btn btn-sm btn-danger" onclick="eliminarFertilizacion(${f.id})">🗑️</button>
-          </div>
-        `;
+          </div>`;
         lista.appendChild(li);
       });
     });
 }
 
 function editarFertilizacion(id) {
-  fetch(`${API}/fertilizaciones/${id}`)
+  fetch(`${API}/fertilizaciones/${id}`, { headers: getAuthHeaders() })
     .then(res => res.json())
     .then(f => {
       fertilizacionEnEdicion = id;
@@ -240,7 +195,7 @@ document.getElementById("fertilizacion-form").addEventListener("submit", e => {
   const url = fertilizacionEnEdicion ? `${API}/fertilizaciones/${fertilizacionEnEdicion}` : `${API}/fertilizaciones`;
   fetch(url, {
     method: metodo,
-    headers: { "Content-Type": "application/json" },
+    headers: getAuthHeaders(),
     body: JSON.stringify(fertilizacion)
   }).then(() => {
     mostrarFertilizaciones();
@@ -251,13 +206,16 @@ document.getElementById("fertilizacion-form").addEventListener("submit", e => {
 
 function eliminarFertilizacion(id) {
   if (confirm("¿Eliminar esta fertilización?")) {
-    fetch(`${API}/fertilizaciones/${id}`, { method: "DELETE" }).then(mostrarFertilizaciones);
+    fetch(`${API}/fertilizaciones/${id}`, {
+      method: "DELETE",
+      headers: getAuthHeaders()
+    }).then(mostrarFertilizaciones);
   }
 }
 
-// ----------------- INICIALIZACIÓN ------------------
+// ------------------ INICIALIZACIÓN ------------------
 function cargarParcelasParaFormularios() {
-  fetch(`${API}/parcelas`)
+  fetch(`${API}/parcelas`, { headers: getAuthHeaders() })
     .then(res => res.json())
     .then(data => {
       const selects = [
@@ -278,6 +236,5 @@ function cargarParcelasParaFormularios() {
 
 mostrarCultivos();
 mostrarParcelas();
-mostrarRiegos();
 mostrarFertilizaciones();
 cargarParcelasParaFormularios();
