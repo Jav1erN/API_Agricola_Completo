@@ -17,6 +17,18 @@ if (!localStorage.getItem("token")) {
   window.location.href = "login.html";
 }
 
+// ------------------ TOAST ------------------
+function mostrarToast(mensaje, color = "bg-success") {
+  let toastContainer = document.getElementById("toastNotificacion");
+  let toastBody = document.getElementById("toastMensaje");
+
+  toastContainer.className = `toast align-items-center text-white ${color} border-0`;
+  toastBody.textContent = mensaje;
+
+  const toast = new bootstrap.Toast(toastContainer);
+  toast.show();
+}
+
 // ------------------ CULTIVOS ------------------
 function mostrarCultivos() {
   fetch(`${API}/cultivos`, { headers: getAuthHeaders() })
@@ -73,6 +85,7 @@ document.getElementById("cultivo-form").addEventListener("submit", e => {
     mostrarCultivos();
     document.getElementById("cultivo-form").reset();
     cultivoEnEdicion = null;
+    mostrarToast("🌿 Cultivo guardado con éxito");
   });
 });
 
@@ -81,7 +94,10 @@ function eliminarCultivo(id) {
     fetch(`${API}/cultivos/${id}`, {
       method: "DELETE",
       headers: getAuthHeaders()
-    }).then(mostrarCultivos);
+    }).then(() => {
+      mostrarCultivos();
+      mostrarToast("🗑️ Cultivo eliminado", "bg-danger");
+    });
   }
 }
 
@@ -138,6 +154,7 @@ document.getElementById("parcela-form").addEventListener("submit", e => {
     mostrarParcelas();
     document.getElementById("parcela-form").reset();
     parcelaEnEdicion = null;
+    mostrarToast("🌾 Parcela guardada con éxito");
   });
 });
 
@@ -146,7 +163,10 @@ function eliminarParcela(id) {
     fetch(`${API}/parcelas/${id}`, {
       method: "DELETE",
       headers: getAuthHeaders()
-    }).then(mostrarParcelas);
+    }).then(() => {
+      mostrarParcelas();
+      mostrarToast("🗑️ Parcela eliminada", "bg-danger");
+    });
   }
 }
 
@@ -201,6 +221,7 @@ document.getElementById("fertilizacion-form").addEventListener("submit", e => {
     mostrarFertilizaciones();
     document.getElementById("fertilizacion-form").reset();
     fertilizacionEnEdicion = null;
+    mostrarToast("🧪 Fertilización registrada con éxito");
   });
 });
 
@@ -209,7 +230,75 @@ function eliminarFertilizacion(id) {
     fetch(`${API}/fertilizaciones/${id}`, {
       method: "DELETE",
       headers: getAuthHeaders()
-    }).then(mostrarFertilizaciones);
+    }).then(() => {
+      mostrarFertilizaciones();
+      mostrarToast("🗑️ Fertilización eliminada", "bg-danger");
+    });
+  }
+}
+
+// ------------------ RIEGOS ------------------
+function mostrarRiegos() {
+  fetch(`${API}/riegos`, { headers: getAuthHeaders() })
+    .then(res => res.json())
+    .then(data => {
+      const lista = document.getElementById("riego-list");
+      lista.innerHTML = "";
+      data.forEach(r => {
+        const li = document.createElement("li");
+        li.className = "list-group-item d-flex justify-content-between align-items-center";
+        li.innerHTML = `
+          <span>💧 ${r.fecha} - ${r.cantidadAgua} L en ${r.parcela?.nombre || "Parcela no asignada"}</span>
+          <div>
+            <button class="btn btn-sm btn-warning me-1" onclick="editarRiego(${r.id})">✏️</button>
+            <button class="btn btn-sm btn-danger" onclick="eliminarRiego(${r.id})">🗑️</button>
+          </div>`;
+        lista.appendChild(li);
+      });
+    });
+}
+
+function editarRiego(id) {
+  fetch(`${API}/riegos/${id}`, { headers: getAuthHeaders() })
+    .then(res => res.json())
+    .then(r => {
+      riegoEnEdicion = id;
+      document.getElementById("fechaRiego").value = r.fecha;
+      document.getElementById("cantidadAgua").value = r.cantidadAgua;
+      document.getElementById("parcelaSelectRiego").value = r.parcela?.id || "";
+    });
+}
+
+document.getElementById("riego-form").addEventListener("submit", e => {
+  e.preventDefault();
+  const riego = {
+    fecha: document.getElementById("fechaRiego").value,
+    cantidadAgua: parseFloat(document.getElementById("cantidadAgua").value),
+    parcela: { id: parseInt(document.getElementById("parcelaSelectRiego").value) }
+  };
+  const metodo = riegoEnEdicion ? "PUT" : "POST";
+  const url = riegoEnEdicion ? `${API}/riegos/${riegoEnEdicion}` : `${API}/riegos`;
+  fetch(url, {
+    method: metodo,
+    headers: getAuthHeaders(),
+    body: JSON.stringify(riego)
+  }).then(() => {
+    mostrarRiegos();
+    document.getElementById("riego-form").reset();
+    riegoEnEdicion = null;
+    mostrarToast("💧 Riego registrado con éxito");
+  });
+});
+
+function eliminarRiego(id) {
+  if (confirm("¿Eliminar este riego?")) {
+    fetch(`${API}/riegos/${id}`, {
+      method: "DELETE",
+      headers: getAuthHeaders()
+    }).then(() => {
+      mostrarRiegos();
+      mostrarToast("🗑️ Riego eliminado", "bg-danger");
+    });
   }
 }
 
@@ -234,7 +323,13 @@ function cargarParcelasParaFormularios() {
     });
 }
 
+function logout() {
+  localStorage.removeItem("token");
+  window.location.href = "login.html";
+}
+
 mostrarCultivos();
 mostrarParcelas();
+mostrarRiegos();
 mostrarFertilizaciones();
 cargarParcelasParaFormularios();
